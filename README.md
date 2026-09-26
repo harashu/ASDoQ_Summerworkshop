@@ -2,6 +2,51 @@
 
 ASDoQ サマーワークショップ（2026年9月）向けの試作です。人格の異なる複数のレビュアー（ペルソナ）が、ASDoQ システム開発文書品質モデルの6品質特性・17副特性に従って文書をレビューし、指揮者（オーケストレーター）が会社テンプレ・業界ノウハウ・顧客特性の知識で重み付けして、最終レビューにまとめます。
 
+## はじめての方へ
+
+### 1. 入手する
+
+GitHub の画面右上の「Code」→「Download ZIP」でダウンロードして展開します。Git を使う場合は次のとおりです。
+
+```bash
+git clone https://github.com/harashu/ASDoQ_Summerworkshop.git
+```
+
+### 2. 試してみる（どちらか一方）
+
+**A. Claude Code で試す（APIキー不要）**
+
+展開したフォルダを Claude Code で開き、次のように依頼します。手順は [docs/run_with_claude_code.md](docs/run_with_claude_code.md) に書いてあります。
+
+> docs/run_with_claude_code.md の手順で、tests/cases/case01_srs をレビューして、正解と照合してください。
+
+**B. Claude API で動かす（Python と Anthropic の APIキーが必要）**
+
+```bash
+pip install -r runner/requirements.txt
+```
+
+```bash
+python runner/review.py --case tests/cases/case01_srs --dry-run
+```
+
+`--dry-run` を外すと実際にレビューします（1回 1.5〜3.5 ドル程度）。詳しくは [runner/README.md](runner/README.md) を参照してください。
+
+### 3. 自分の文書をレビューする
+
+`tests/cases/` の下にフォルダを作り、次の2つを置いて、上の手順の `case01_srs` をそのフォルダ名に置き換えます。
+
+- `document.md`：レビューしたい文書（Markdown）
+- `meta.json`：文書の種類や目的（[tests/cases/case01_srs/meta.json](tests/cases/case01_srs/meta.json) を参考に書き換える）
+
+正解表（`answer_key.json`）がなければ、照合（`evaluate.py`）は使えませんが、レビューはできます。
+
+### 注意
+
+- **ASDoQ の資料は同梱していません。** レビューの実行に必要な定義はプロンプトに組み込み済みなので、資料がなくても動きます。モデルを詳しく知りたい場合は、システム開発文書品質研究会（ASDoQ）から入手してください。
+- **レビューする文書は Anthropic に送信されます。** 社外秘の文書を使う場合は、所属する組織のルールを確認してください。
+- **ワークショップ向けの試作です。** Claude Code での試行は済んでいますが、`runner/review.py`（API版）は API で実際に動かしての確認がまだです。不具合や改善の提案は、GitHub の Issue でお知らせください。
+
 ## 前提にしている知識
 
 | 知識 | 文書 |
