@@ -45,6 +45,13 @@ ASDoQ サマーワークショップ（2026年9月）向けの試作です。人
 オーケストレーター（議長）：統合 ─ 知識ベースで重み付けし、最終レビューと判断の記録を出す
 ```
 
+## ライセンス
+
+[MIT License](LICENSE) です。ただし、次のものは MIT License の対象外で、権利はそれぞれの権利者にあります。
+
+- ASDoQ「システム開発文書品質モデル Ver. 2.0a」に由来する品質特性・品質副特性・測定項目の名称と説明（`prompts/common/reviewer_base.md`、`runner/asdoq.py` などに含まれる部分）：システム開発文書品質研究会（ASDoQ）
+- [docs/reference/building_effective_agents_要点.md](docs/reference/building_effective_agents_要点.md) が要約している記事の内容：Anthropic
+
 ## はじめに読む順番
 
 1. この README
