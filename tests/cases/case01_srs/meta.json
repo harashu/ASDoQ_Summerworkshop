@@ -1,0 +1,12 @@
+{
+  "case_id": "case01_srs",
+  "document_file": "document.md",
+  "document_type": "要求仕様書",
+  "purpose": "設備稼働監視システムのソフトウェア要求を、顧客Aと開発チームで合意する",
+  "intended_readers": ["顧客Aの設備管理部門", "開発チームの設計者・テスター"],
+  "external": true,
+  "overseas": true,
+  "audit_target": false,
+  "knowledge_base": false,
+  "customer": "顧客A"
+}

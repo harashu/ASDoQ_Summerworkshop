@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 秘密情報（APIキーなどは絶対にコミットしない）
+.env
+*.key
+
+# OS・エディタ
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*
+.vscode/
+.idea/
+
+# 公開リポジトリに含めない資料（PC 内には残す）
+# - ASDoQ の資料のコピー（著作権は ASDoQ にあるため）
+docs/reference/ASDoQ_SystemDocumentationQualityModel_v2.0a.md
+docs/reference/ASDoQ文書品質モデル_再構成版用解説.md
+# - ワークショップ教材（ブロック崩し）と正解、その実行結果（教材の正解を公開しないため）
+tests/cases/case02_blockbreaker/
+runs/case02_blockbreaker_*/
+
+# Claude Code のローカル設定
+.claude/settings.local.json

@@ -1,0 +1,683 @@
+<plan>
+- 最重要の問題：要求同士の矛盾（データ保存期間3年／1年、停止通知の即時／5分以上、処理能力100件/秒と200台×1秒周期）と、1.1で合意文書としての目的・読み手が書かれていないこと。顧客Aとの合意に使う文書として、期待値が一つに定まらない。
+- 効いた知識：K-TPL-01（目的・読み手の必須記載）、K-TPL-02（承認者欄・改訂履歴の必須記載）、K-CUS-01（「等」「適宜」など範囲の曖昧さへの顧客Aの厳しさ）、K-DOM-02（電源ONの状態／イベント区別）、K-DOM-03（販売終了部品の前提化）。K-TPL-03（要求ID）は指摘がなかったため最終レビューには加えていない。
+- 補正方針：必須かつ直接該当する知識は+1.0、推奨または間接的な該当は+0.5。K-CUS-02は対象文書が手順書・取扱説明書のため補正には使わなかった。
+- 困った人型（C群）のペルソナは今回のパネルにいないため、言い換えは発生していない。A01（意地悪な顧客）の「よろしいですね？」型の圧力表現は取り除き、文書上の問題だけを残した。B08の表記系の指摘は同種をまとめ、「8. 軽微な指摘のまとめ」に置いた。
+- 分類は品質責任者（A11）の分類を基準線として較正した（例：ゲートウェイの別名は表記適切性ではなく非曖昧性（一意性）に統一）。
+- ペルソナが挙げていない気づき（最終レビューには加えない）：2.1の「開発チームは来月から2名増員する予定」は要求仕様書の目的と無関係な記述。要求IDが一切付いていない点（K-TPL-03 必須）も未指摘。
+</plan>
+
+<final_review>
+# 文書レビュー結果：設備稼働監視システム ソフトウェア要求仕様書（EMS-SRS-001 版数0.3）
+
+## 1. 総評
+最も重要な問題は、要求同士が矛盾していて、顧客Aと開発チームの期待値が一つに定まらないことです（データ保存期間3年／1年、停止通知の即時／5分以上、ゲートウェイ処理能力100件/秒と200台×1秒周期）。あわせて、1.1で文書の目的・読み手・開示範囲が書かれておらず、承認者欄も空欄のため、合意文書として使える状態になっていません。「必要に応じて」「適宜」「等」「昨年と同様」「高速に」など範囲や基準が定まらない表現が多く、契約範囲と受入判定の両面で争点になりやすい状態です。販売終了予定のXM-100を前提にした構成についても、対応方針を書く必要があります。一方で、帳票レイアウトのTBDに決定時期と決定方法を書いている点、表2のしきい値、稼働率の計算式による定義は良い書き方なので、他の箇所にも広げてください。
+
+## 2. 最優先で対応すべき指摘（最終スコア上位3件）
+
+### 【R-01】データ保存期間が3.1（3年）と4.4（1年）で矛盾している
+- 品質特性／副特性：整合性／無矛盾性（測定項目：項目間の矛盾がない）
+- 箇所：3.1 データ収集「収集したデータは、クラウドサーバに3年間保存する。」／4.4 データ保存「データの保存期間は1年とする。」
+- 問題：同じデータの保存期間が2か所で食い違っている。ストレージ容量の見積もり、削除処理の設計、受入試験の期待値が決まらず、顧客Aと開発側がそれぞれ自分に有利な値を根拠にできてしまう。
+- 修正案：顧客Aと保存期間を確定し、4.4に一元化する。3.1からは「保存期間は4.4による」と参照する。保存対象（生データ・集計値）ごとに期間が異なる場合は表で分けて書き、決定の根拠（顧客Aの社内規程など）と改訂履歴への記録も残す。
+- 指摘したレビュアー：実装者・テスター、半年後の後任、法務担当ほか（計6名）
+
+### 【R-02】文書の目的・読み手・開示範囲が書かれていない
+- 品質特性／副特性：目的適合性／目的明示性（測定項目：文書の目的を記述している／文書の読み手を記述している）
+- 箇所：1.1 目的「本書は、設備稼働監視システムについて記述する。」
+- 問題：記述の対象を述べているだけで、「顧客Aと開発チームでソフトウェア要求を合意する」という目的、想定読者（顧客Aの設備管理部門、設計者・テスター）、提出先・開示範囲が書かれていない。社内テンプレート（K-TPL-01）で必須とされている項目が欠けており、合意文書としての位置付けが不明。
+- 修正案：1.1を「本書は、顧客Aの国内工場およびタイ工場に導入する本システムのソフトウェア要求を定義し、顧客Aと開発チームの間で合意するための文書である。」とし、想定読者と開示範囲（顧客A・開発チーム内に限る等、範囲を限定して）を追記する。
+- 指摘したレビュアー：意地悪な顧客、冷静な品質責任者ほか（計4名）
+
+### 【R-03】停止時の通知条件が「即時」と「5分以上」で矛盾している
+- 品質特性／副特性：整合性／無矛盾性（測定項目：条件間の矛盾がない）
+- 箇所：3.3 アラーム通知「設備が停止した場合は、即時に管理者へ通知する。」「停止時間が5分以上になった場合に、管理者へ通知する。」
+- 問題：停止直後に通知するのか、5分継続してから通知するのか、両方送るのかが決まらない。実装・試験の期待値が二つになり、通知遅延が問題になったときにどちらの記述に依拠するかも判断できない。
+- 修正案：通知の種類とトリガを分けて条件表で定義する。例：「第1報：停止を検知した時点で管理者へ通知する」「第2報：停止が5分継続した時点で再通知する」。どちらか一方にする場合は他方を削除し、5分とした理由を書く。
+- 指摘したレビュアー：実装者・テスター、冷静な品質責任者、法務担当ほか（計5名）
+
+## 3. 指摘一覧（品質特性ごと）
+
+### 目的適合性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-02 | 目的明示性 | 1.1 目的 | 文書の目的（顧客Aとの要求合意）、読み手、開示範囲がない | 目的・想定読者・開示範囲を明記する（上記参照） | 5.74 |
+| R-24 | 目的合致性 | 3.3 アラーム通知「オペレータが設備を停止をする場合は、事前に管理者へ連絡する。」 | 顧客側の運用ルールがシステム要求に混在し、義務を負う主体と本書の範囲が不明 | システム要求と運用ルールを分ける。運用ルールは「顧客Aの運用事項（本書の対象外）」として別記するか、別途合意事項とする | 2.88 |
+| R-26 | 目的合致性 | 1.2 適用範囲／5. 制約条件（記載なし） | 対象外事項、前提条件、顧客Aに依頼する提供物（ネットワーク回線、PLC設定変更、監視端末の調達など）が書かれておらず、責任分担が不明 | 「対象外事項」「前提条件」「顧客Aの提供物・作業と期限」を列挙して明記する | 2.74 |
+
+### 保守性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-05 | 持続可能性 | 5. 制約条件「2026年12月末で販売終了予定であるとX社から案内があった。」／2.2 | 採用部品XM-100の販売終了が判明しているのに、代替品・最終調達・保守期間の方針がない。ゲートウェイ関連の要求（2.2、3.1、4.1）全体の実現性に影響する | 後継品の候補と評価計画、最終購入数量、保守部品の確保期間、方針の決定時期と決定者、影響を受ける要求を5章に書く。部品の供給期間を確認した旨も記載する（K-DOM-03）。情報源（X社からの案内）の記載は残す | 5.06 |
+| R-25 | 持続可能性 | 4.2 可用性「MTBFの目標値はTBDとする。」 | TBDの決定時期・決定方法・決定者がない | 3.4の帳票レイアウトのTBDと同じ形式で「〇年〇月〇日の〇〇会で顧客Aと合意して決定する」と書く | 2.80 |
+| R-29 | 再利用性 | 3.3「通知メールの文面は、第2ラインの山田課長宛ての次の文面をそのまま使用する。」 | 特定個人・ライン・号機を埋め込んだ文面で、他の宛先・設備に使えない。個人名が本来の宛先以外に送られるおそれもある | 宛先名・ライン・号機を可変項目としたテンプレート（例：「{宛先名}様 {ライン名}の{設備名}が停止しました。」）として定義し、個人名の扱いを明記する | 2.66 |
+
+### 整合性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-01 | 無矛盾性 | 3.1／4.4 | データ保存期間が3年と1年で矛盾 | 4.4に一元化し3.1は参照にする（上記参照） | 5.77 |
+| R-03 | 無矛盾性 | 3.3 第1・第2文 | 停止通知が「即時」と「5分以上」で矛盾 | 通知の種類とトリガを条件表で定義する（上記参照） | 5.32 |
+| R-06 | 無矛盾性 | 3.1「ゲートウェイ1台で最大200台の設備を監視する。」／4.1「ゲートウェイの処理能力は、最大100件/秒とする。」 | 1秒周期×200台＝200件/秒が処理能力100件/秒を超え、要求どおりに実現できない。「件」の定義と算出根拠もない | 収集周期・1台あたりの監視台数・処理能力のいずれかを見直し、「200台×収集周期≦処理能力」となるよう整合させる。「件」の定義と算出根拠を4.1に書く | 4.92 |
+| R-37 | 無矛盾性 | 3.3「アラームは、管理者にメールで送信する。」 | 送信先が管理者のみとされる一方、末尾の通知先は管理者・保全担当者・ライン責任者の3者で食い違う | 通知先を1か所（通知先一覧）で定義し、各文はそれを参照する | 2.03 |
+| R-18 | 一貫性 | 2.2 図1 | 本文は4要素（監視端末を含む）だが、図1には3要素しかなく監視端末とその接続がない | 図1に監視端末と、クラウドサーバとの接続（方向・経路）を追加する | 3.56 |
+| R-23 | 構造性 | 3.1の下位見出し「3.1.1.1 監視端末の起動」 | 3.1.1を飛ばして3.1.1.1が置かれ、内容もデータ収集に属さない | 監視端末の起動を適切な章（例：3.2の下位の「3.2.1」）に移し、見出しレベルを揃える。「OFFからONに変わったときに」というイベントの書き方はそのまま残す | 2.92 |
+
+### 理解容易性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-04 | 非曖昧性（一意性） | 3.4「月次報告書は、昨年と同様の形式で出力する。」 | 基準となる帳票が特定できず、後段のTBDとの関係も不明。範囲が広く解釈される余地がある | 基準とする帳票を文書番号・版数で特定するか付録として添付し、決定済みの項目とTBDの項目を分けて書く | 5.24 |
+| R-08 | 非曖昧性（一意性） | 3.2「オペレータは、必要に応じて、表示する設備を適宜切り替える等の操作を行える。」 | 「必要に応じて」「適宜」「等」で操作範囲が限定されず、提供範囲と受入判定が決まらない。「行える」が提供義務か任意かも不明 | 提供する操作を限定列挙し（例：表示設備の切替、表示期間の変更）、それ以外は対象外と明記する。文末は「本システムは〜の機能を提供する」と義務が分かる形に統一する（K-CUS-01） | 4.88 |
+| R-09 | 非曖昧性（一意性） | 3.1「GWは…」「中継機は…」、1.3 用語「ゲートウェイ」 | 同じ機器を「ゲートウェイ」「GW」「中継機」と呼び分けており別機器とも読める。用語表のゲートウェイの定義欄が空欄。通信途絶時の保持容量・保持期間もない | 名称を「ゲートウェイ」に統一し、1.3に定義を記入する。3.1の途絶時の文は「ゲートウェイは通信途絶中に収集したデータを保持する。通信復旧後、保持したデータをクラウドサーバへ送信する。」とし、保持の上限（時間・件数）と超過時の扱いを書く | 4.74 |
+| R-13 | 非曖昧性（一意性） | 3.2「監視画面は、設備の状態を高速に更新して表示する。」 | 「高速に」の数値基準がなく受入判定できない。更新周期を設定変更できるとする記述との関係、初期値・設定範囲もない | 更新周期の初期値・設定可能範囲（例：初期値5秒、1〜60秒）と、データ収集から画面反映までの最大遅延を数値で規定する | 4.24 |
+| R-19 | 非曖昧性（一意性） | 3.3「すべての通知先にメールが届かない場合は、監視画面に警告を表示する。」 | 全件不達か一部不達かの2通りに読め、不達の判定方法（送信エラー・バウンス等）も不明 | 「通知先のうち1件以上でメール送信がエラーとなった場合」のように条件と判定方法を一意に書く | 3.56 |
+| R-21 | 非曖昧性（一意性） | 3.1「電源ONのとき、ゲートウェイは初期化処理を実行する。」 | 状態（ONの間）とイベント（ONに変わった時）が区別されておらず、初期化処理の内容もない（K-DOM-02） | 「電源がOFFからONに変わったとき」と書き、初期化処理の内容を列挙する | 3.03 |
+| R-14 | 非曖昧性（識別性） | 3.2「日付が変わったとき、集計値をリセットする。」 | リセット対象の集計値、リセットの主体と後の値、日付の境界（国内工場とタイ工場の時差）が特定できない | 「クラウドサーバは、各工場の現地時刻0:00に、当日の稼働時間・停止回数の集計値を0に戻す。」のように主体・対象・時刻基準を書く | 4.06 |
+| R-16 | 非曖昧性（識別性） | 3.2「設備が異常のとき、画面上の該当設備を赤色で表示する。」 | 「異常」の判定条件（表2のしきい値の超過か以上か、温度と振動のOR/AND）、停止との関係、解除条件がない | 「温度または振動が表2のしきい値を超えた状態を異常とする。しきい値以下に戻った時点で異常を解除する。」のように定義し、異常の種類ごとに検出条件と動作を表にまとめる（K-DOM-01）。表2はそのまま活かす | 3.74 |
+| R-12 | 関係性 | 改訂履歴「一部修正」「前回の指摘を反映」 | 変更箇所・変更理由・指摘元が追跡できない | 改訂履歴に変更した章番号、変更内容、変更理由（指摘元のレビュー記録番号など）を書く（K-TPL-02）。表の形式は現状のまま使う | 4.24 |
+| R-17 | 関係性 | 2.2「通信プロトコルの詳細は別紙を参照のこと。」 | 別紙が文書番号・名称で特定されていない | 別紙の文書番号・文書名・版数を明記する。参照文書が増える場合は1章に参照文書一覧を設ける | 3.74 |
+
+### 可読性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-10 | 簡潔性 | 3.3「計画停止中の設備でないものは、通知対象外としない。」 | 二重否定で通知対象の範囲が読み取りにくく、機械翻訳で意味が反転するおそれがある | 「計画停止中の設備を除き、すべての設備を通知対象とする。」と肯定文で書く | 4.56 |
+| R-15 | 表現適切性 | 3.3「異常が検知された場合、内容が確認され、必要な措置が取られる。」 | 受動態が続き、検知・確認・措置の主体（システムか人か）と「必要な措置」の範囲が特定できない | 「本システムは異常を検知し、管理者へ通知する。」とシステム要求だけを書く。人の確認・措置は運用事項として主体（保全担当者など）と内容を明記するか、本書の対象外と明記する | 3.89 |
+
+### 規範適合性
+| ID | 副特性 | 箇所 | 問題 | 修正案 | スコア |
+|---|---|---|---|---|---|
+| R-07 | 基準適合性 | 表紙「承認者」 | 承認者が空欄で、合意の成立と承認権限の所在が確認できない（K-TPL-02 必須） | 顧客A側・開発側それぞれの承認者の氏名・役職・承認日の欄を設け、記入する | 4.89 |
+| R-11 | 基準適合性 | 4.3「すべてのオペレータは、所属ラインに関係なく、全設備の警報しきい値を変更できる。」 | しきい値の変更権限が役割・所属で制限されず、職務分掌に沿わない。誤設定時の責任の所在も不明で、理由も書かれていない | 変更できる役割（例：管理者、当該ライン責任者）と範囲、変更時の承認手続、変更履歴の記録を要求として定める | 4.54 |
+| R-20 | 基準適合性 | 2.2「X社製ゲートウェイは通信が最も安定しているため採用する。」 | 比較対象・評価方法を示さない最上級の評価が事実のように書かれている。代替品選定時の判断基準にも使えない | 比較対象・評価方法・評価結果（または評価記録への参照）を事実として書き、採用はその結果に基づく判断であることが分かる表現にする | 3.28 |
+| R-27 | 基準適合性 | 1.2 適用範囲／4.3 セキュリティ（記載なし） | タイ工場を含むのに、個人情報・データ保護法令（日本の個人情報保護法、タイPDPA等）への適合、サーバ所在国、越境移転の扱いが書かれていない | 適用法令、個人情報に該当するデータ（オペレータID等）の範囲、サーバ所在国、越境移転の可否と手続を要求として記載する。適用法令の特定は法務部門に確認する | 2.72 |
+| R-22 | 文法適合性 | 2.1「本システムの特長は、遠隔で稼働状況を確認できる。」 | 主語と述語が対応しないねじれ文 | 「本システムの特長は、遠隔で稼働状況を確認できることである。」とする | 2.93 |
+| R-28 | 記法適合性 | 3.2「監視画面の更新周期は、設定画面で変更できる用にする。」 | 「ように」が「用に」と誤記されている | 「変更できるようにする」に直す | 2.71 |
+| R-32 | 制約適合性 | 3.3 通知メール文面、3.4「帳票のフォントはメイリオ10.5ポイント」、1.2 | タイ工場を含むのに、画面・通知・帳票の対応言語とタイ文字を扱えるフォントの要求がない | 拠点ごとに表示言語・通知言語・帳票言語とフォントを定義する | 2.40 |
+
+## 4. 維持すべき良い点
+- **3.4 帳票出力のTBD**：「2026年10月15日の仕様レビュー会で顧客Aと合意して決定する」と決定時期と決定方法が書かれています。MTBF（R-25）など他のTBDもこの形式に揃えてください（6名のレビュアーが評価）。
+- **表2 しきい値の初期値**：設備種別ごとに単位付きの数値で表にまとめられ、キャプションと列見出しもあります。異常の定義（R-16）を追加する際も、この表を参照する形で活かしてください。
+- **1.3 用語の稼働率**：計算式で定義されており、4.2の目標値99.5%の解釈が一意に定まります。ゲートウェイの定義（R-09）もこの水準で記入してください。
+- **3.1.1.1 監視端末の起動**：「OFFからONに変わったときに」とイベントで書かれており、そのまま試験できます。見出しを直す（R-23）際も文言は残し、3.1のゲートウェイ初期化（R-21）もこの書き方に揃えてください。
+- **5. 制約条件の情報源の明示**：販売終了予定を「X社から案内があった」と出所付きで書いています。対応方針（R-05）を追記する際もこの記載は残してください。
+- **改訂履歴の表形式**：版数と日付の書き方が揃っています。内容欄を具体化する（R-12）際も形式は維持してください。
+
+## 5. 将来の改善候補
+| ID | 副特性 | 箇所 | 内容 |
+|---|---|---|---|
+| R-44 | 表記適切性 | 3.2 表2「5.0 mm/s」ほか | 数値と単位の間のスペースの有無が「80℃」「100件/秒」と揃っていない。影響は小さいため、表記基準を定める際に統一する |
+
+## 6. 別途検討事項（文書の範囲外）
+| ID | 副特性 | 箇所 | 内容 |
+|---|---|---|---|
+| R-45 | 基準適合性 | 5. 制約条件「問い合わせ窓口：0120-000-000（フリーダイヤル、平日9時〜17時）」 | フリーダイヤルは海外から通話できず、受付時間も日本時間か不明で、タイ工場の利用者を考慮していない。問い合わせ窓口はソフトウェア要求ではないため、保守・サポート契約の中で海外拠点向けの窓口を検討し、本書からは削除または参照にとどめる |
+
+## 7. 今後に向けて（書き手に共通する傾向）
+- **同じ内容を複数か所に書き、片方だけ直している**：保存期間（3.1と4.4）、通知条件、通知先、赤色表示、ログイン操作が重複しています。1つの要求は1か所で定義し、他は参照にしてください。
+- **範囲や基準を限定しない表現が多い**：「必要に応じて」「適宜」「等」「昨年と同様」「高速に」「異常」は、顧客Aとの契約範囲や受入判定で争点になります（K-CUS-01）。列挙・数値・参照先で置き換えてください。
+- **決定の理由と出所が残っていない**：採用理由、5分・100件/秒などの数値の根拠、改訂の中身が書かれていません。帳票TBDのように「いつ・誰が・どう決めたか」を書く習慣を広げてください。
+- **主語の省略と長文**：受動態、主語のない文、1文に多くの事柄を詰めた文が、タイ工場の読み手や機械翻訳で誤解を生みます。主語を書き、1文1事柄で書いてください。
+- **システム要求と運用ルール・その他情報の混在**：オペレータの連絡義務、体制の増員予定、問い合わせ窓口など、要求でない記述は分けてください。
+
+## 8. 軽微な指摘のまとめ
+| ID | 副特性 | 箇所 | 問題 |
+|---|---|---|---|
+| R-30 | 簡潔性 | 2.1 背景 第1段落「従来は作業者が1時間ごとに巡回して目視で確認していた…」 | 修飾が多重に入れ子になった長文で係り受けが追いにくく、翻訳で誤訳される。「従来の確認方法」「データの流れ」「本システムで実現すること」の3〜4文に分ける |
+| R-31 | 非曖昧性（識別性） | 3.3「アラームの確認より、復旧作業を開始する。」 | 「より」が比較とも読め、行為の主体もない。「保全担当者は、アラームを確認した後に復旧作業を開始する。」とする（運用事項であれば R-24 と同様に分ける） |
+| R-33 | 非曖昧性（一意性） | 3.2「オペレーターは、ログイン画面でIDを入力し、…CSVを出力する。」 | 7つの操作を1文に詰め込み、手順か要求か、どれが必須かが読めない。番号付きの手順にし、各手順でシステムが行うことを別に書く |
+| R-34 | 表記適切性 | 3.2ほか「オペレータ」「オペレーター」 | 長音の表記ゆれ。「オペレータ」に統一する |
+| R-35 | 記法適合性 | 3.3 通知先「・管理者」「- 保全担当者」「1) ライン責任者」 | 並列の箇条書きで行頭記号が混在。記号を統一する |
+| R-36 | 表記適切性 | 3.2「CSV出力の文字コードはUTF-8です。」 | である調の中に敬体が混在（K-TPL-04）。「UTF-8とする。」とする |
+| R-38 | 非曖昧性（識別性） | 3.3「アラームは、管理者にメールで送信する。」 | 「アラーム」が監視端末の鳴動とメール通知の両方を指している。用語表で「アラーム（鳴動）」と「通知メール」を区別する |
+| R-39 | 文法適合性 | 3.3「設備を停止をする」 | 助詞「を」の重複。「設備を停止する」とする |
+| R-40 | 簡潔性 | 3.2／3.3「異常の設備は、画面上で赤色表示とする。」 | 赤色表示の要求が3.2と3.3に重複（ログイン操作も3.1.1.1・3.2・3.4に重複）。1か所にまとめる |
+| R-41 | 記法適合性 | 3.2「表2 しきい値の初期値」 | 表番号が表2から始まり表1がない。通し番号を振り直す |
+| R-42 | 表記適切性 | 4.3「警報しきい値」、3.3「アラーム」 | 「しきい値／警報しきい値」「アラーム／警報」の表記ゆれ。どちらかに統一し用語表に登録する |
+| R-43 | 一貫性 | 3.4「また、監視画面にログインするときは、IDとパスワードを入力する。」 | 帳票出力の節にログインの記述があり見出しと本文が合わない。ログインに関する章へ移す |
+</final_review>
+
+<trace>
+{
+  "items": [
+    {
+      "review_id": "R-01",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "無矛盾性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-1", "A03-1", "A05-2", "A07-2", "A11-1", "B08-m5"],
+      "translations": [],
+      "score": {"base_max": 4.27, "agreeing_personas": 6, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 5.77},
+      "reason": "6名が独立に指摘した保存期間3年／1年の矛盾。合意文書として致命的なため最優先で採用。A01の圧力表現は除去した。"
+    },
+    {
+      "review_id": "R-02",
+      "status": "採用",
+      "characteristic": "目的適合性",
+      "sub_characteristic": "目的明示性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-2", "A03-m5", "A07-m4", "A11-4"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 4, "agreement_bonus": 1.5, "knowledge_adjust": 1.0, "knowledge_refs": ["K-TPL-01"], "knowledge_reason": "K-TPL-01（必須）で「1. はじめに」に目的・想定読者・適用範囲の記載が求められており、目的と想定読者が欠けているため引き上げ", "final": 5.74},
+      "reason": "会社テンプレートの必須項目の欠落で、合意文書の位置付けが不明。採用。"
+    },
+    {
+      "review_id": "R-03",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "無矛盾性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-4", "A03-5", "A05-3", "A07-10", "A11-3"],
+      "translations": [],
+      "score": {"base_max": 3.82, "agreeing_personas": 5, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 5.32},
+      "reason": "停止通知の即時／5分以上の条件間矛盾。5名が指摘。採用。"
+    },
+    {
+      "review_id": "R-04",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": "非曖昧性（識別性）（A03-m2、A05-m4）",
+      "reclassify_reason": "測定項目「指し示すものが明確である」（一意性）に該当し、A01・A07の分類に揃えた",
+      "source_findings": ["A01-8", "A03-m2", "A05-m4", "A07-3"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 4, "agreement_bonus": 1.5, "knowledge_adjust": 0.5, "knowledge_refs": ["K-CUS-01"], "knowledge_reason": "K-CUS-01（顧客Aは契約範囲の曖昧さに厳しい）。「昨年と同様」は再現範囲が広く解釈され得る契約範囲の曖昧表現で、「等」「適宜」と同種のため間接的に該当し+0.5", "final": 5.24},
+      "reason": "基準帳票が特定できず帳票を作れない。採用。"
+    },
+    {
+      "review_id": "R-05",
+      "status": "採用",
+      "characteristic": "保守性",
+      "sub_characteristic": "持続可能性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-6", "A03-m1", "A05-m5", "A07-5", "A11-5"],
+      "translations": [],
+      "score": {"base_max": 3.06, "agreeing_personas": 5, "agreement_bonus": 1.5, "knowledge_adjust": 0.5, "knowledge_refs": ["K-DOM-03"], "knowledge_reason": "K-DOM-03（推奨）販売中止予定の部品を前提にしない、供給期間を確認した旨を記載する、に直接該当。推奨のため+0.5", "final": 5.06},
+      "reason": "A01-6はsuggestionがnullのため、測定項目とK-DOM-03に基づき修正案を作成。費用負担の論点は契約事項のため修正案には含めず、方針・決定時期の記載に絞った。良い点（情報源の明示）を残すよう明記。"
+    },
+    {
+      "review_id": "R-06",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "無矛盾性",
+      "reclassified_from": "制約適合性／無矛盾性（A05-1）",
+      "reclassify_reason": "3.1と4.1の数値が両立しないことが本質で、条件間の矛盾（無矛盾性）。基準線のA11と他2名の分類に揃えた",
+      "source_findings": ["A01-5", "A05-1", "A07-7", "A11-2"],
+      "translations": [],
+      "score": {"base_max": 3.42, "agreeing_personas": 4, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 4.92},
+      "reason": "要求どおりに実現できない数値矛盾。採用。"
+    },
+    {
+      "review_id": "R-07",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "基準適合性",
+      "reclassified_from": "目的明示性（A01-m5）、関係性（A07-m5）",
+      "reclassify_reason": "承認者欄は文書標準（K-TPL-02）と承認権限のビジネスルールの問題であり、基準適合性に統一した",
+      "source_findings": ["A01-m5", "A03-3", "A07-m5"],
+      "translations": [],
+      "score": {"base_max": 2.89, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 1.0, "knowledge_refs": ["K-TPL-02"], "knowledge_reason": "K-TPL-02（必須）で表紙に承認者を書くことが求められているため引き上げ", "final": 4.89},
+      "reason": "合意文書として承認の証跡がない。採用。"
+    },
+    {
+      "review_id": "R-08",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": "持続可能性（A05-m3）、非曖昧性（識別性）（A09-10）",
+      "reclassify_reason": "「等」「適宜」により複数の解釈が成り立つことが本質で、一意性に統一した",
+      "source_findings": ["A01-7", "A03-10", "A05-m3", "A09-10"],
+      "translations": [],
+      "score": {"base_max": 2.38, "agreeing_personas": 4, "agreement_bonus": 1.5, "knowledge_adjust": 1.0, "knowledge_refs": ["K-CUS-01"], "knowledge_reason": "K-CUS-01（必須）顧客Aは「等」「適宜」を含む記述で追加作業範囲が争点になった実績があり、直接該当するため引き上げ", "final": 4.88},
+      "reason": "顧客特性上のリスクが大きい。A03-10の「行える」「用にする」の義務／任意の区別も修正案に含めた（誤字自体はR-28）。採用。"
+    },
+    {
+      "review_id": "R-09",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": "表記適切性（B08-1、A09-6）",
+      "reclassify_reason": "測定項目「同じ内容のものを違う名前で定義しない」は一意性にあり、別機器と解釈され得ることが問題の本質のため、基準線A11の分類に揃えた",
+      "source_findings": ["A05-9", "A07-9", "A09-6", "A11-7", "B08-1", "B08-7"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 5, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 4.74},
+      "reason": "名称不統一と用語表の空欄（B08-7、A11-7、A07-9で一体として指摘）を1件に統合。B08は2件だが1人として数えた。A05-9の保持容量の論点も修正案に含めた。採用。"
+    },
+    {
+      "review_id": "R-10",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "簡潔性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A03-m4", "A05-m1", "A09-1", "A11-m2", "B08-2"],
+      "translations": [],
+      "score": {"base_max": 3.06, "agreeing_personas": 5, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "K-CUS-02は対象文書が手順書・取扱説明書のため補正に使わない", "final": 4.56},
+      "reason": "二重否定で通知対象が反転して読まれるおそれ。採用。"
+    },
+    {
+      "review_id": "R-11",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "基準適合性",
+      "reclassified_from": "一貫性（A07-m2）",
+      "reclassify_reason": "理由の欠落よりも職務分掌に反する権限設定が本質のため、基準適合性に統一した",
+      "source_findings": ["A01-m2", "A03-4", "A07-m2", "A11-6"],
+      "translations": [],
+      "score": {"base_max": 3.04, "agreeing_personas": 4, "agreement_bonus": 1.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 4.54},
+      "reason": "しきい値変更権限の職務分掌上の問題。採用。"
+    },
+    {
+      "review_id": "R-12",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "関係性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A07-1"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 1.0, "knowledge_refs": ["K-TPL-02"], "knowledge_reason": "K-TPL-02（必須）で改訂履歴表に変更内容を残すことが求められているため引き上げ", "final": 4.24},
+      "reason": "改訂内容が追跡できない。良い点（改訂履歴の表形式）を維持する修正案とした。採用。"
+    },
+    {
+      "review_id": "R-13",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": "持続可能性（A05-5）",
+      "reclassify_reason": "基準線A11とA01の分類（複数の解釈が成り立つ）に揃えた。検証不能の側面は問題文に含めた",
+      "source_findings": ["A01-m1", "A05-5", "A11-8"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 4.24},
+      "reason": "受入判定ができない。採用。"
+    },
+    {
+      "review_id": "R-14",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（識別性）",
+      "reclassified_from": "表現適切性（A09-9）、基準適合性（A01-10）",
+      "reclassify_reason": "リセット対象・主体・時刻基準が特定できないことが共通の本質で、測定項目「対象を特定できる」（識別性）に統一した。A01-10の言語対応の論点はR-32で扱う",
+      "source_findings": ["A01-10", "A05-6", "A09-9"],
+      "translations": [],
+      "score": {"base_max": 3.06, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "K-CUS-02は対象文書が手順書・取扱説明書のため補正に使わない", "final": 4.06},
+      "reason": "タイ工場との時差を含め動作が特定できない。採用。"
+    },
+    {
+      "review_id": "R-15",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "表現適切性",
+      "reclassified_from": "非曖昧性（識別性）（A03-6）",
+      "reclassify_reason": "受動態で行為の主体が特定できないことが本質で、測定項目「行為の主体を特定できる」（表現適切性）に揃えた",
+      "source_findings": ["A03-6", "A09-2", "B08-8"],
+      "translations": [],
+      "score": {"base_max": 2.89, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "K-CUS-02は対象文書が手順書・取扱説明書のため補正に使わない", "final": 3.89},
+      "reason": "責任分界が不明。A01-3でも同文に触れているが、A01-3の主眼は運用ルールの混入のためR-24に入れた。採用。"
+    },
+    {
+      "review_id": "R-16",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（識別性）",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A05-4"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.5, "knowledge_refs": ["K-DOM-01"], "knowledge_reason": "K-DOM-01（推奨）異常時の動作は異常の種類ごとに検出条件と動作を表にまとめる。異常の定義が機能ごとに散らばり未定義であることに該当し+0.5", "final": 3.74},
+      "reason": "判定ロジックが書けない。良い点の表2を活かす修正案とした。採用。"
+    },
+    {
+      "review_id": "R-17",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "関係性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-m3", "A07-4"],
+      "translations": [],
+      "score": {"base_max": 3.24, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 3.74},
+      "reason": "参照先が特定できない。採用。"
+    },
+    {
+      "review_id": "R-18",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "一貫性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A05-8", "A11-10", "B08-3"],
+      "translations": [],
+      "score": {"base_max": 2.56, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 3.56},
+      "reason": "図と本文の齟齬。採用。"
+    },
+    {
+      "review_id": "R-19",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A03-9", "A05-7"],
+      "translations": [],
+      "score": {"base_max": 3.06, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 3.56},
+      "reason": "全部否定／部分否定の2通りに読める。採用。"
+    },
+    {
+      "review_id": "R-20",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "基準適合性",
+      "reclassified_from": "一貫性（A07-8）",
+      "reclassify_reason": "根拠のない評価を事実のように書いている点が本質で、測定項目「事実と意見を書き分けている」（基準適合性）。基準線A11とA03の分類に揃えた",
+      "source_findings": ["A03-7", "A07-8", "A11-9"],
+      "translations": [],
+      "score": {"base_max": 2.28, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 3.28},
+      "reason": "採用。"
+    },
+    {
+      "review_id": "R-21",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A05-10"],
+      "translations": [],
+      "score": {"base_max": 2.03, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 1.0, "knowledge_refs": ["K-DOM-02"], "knowledge_reason": "K-DOM-02（必須）「電源ONのとき」は状態かイベントかを必ず区別する、に直接該当するため引き上げ", "final": 3.03},
+      "reason": "採用。良い点の3.1.1.1の書き方に揃える修正案とした。"
+    },
+    {
+      "review_id": "R-22",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "文法適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A09-7", "B08-6"],
+      "translations": [],
+      "score": {"base_max": 2.43, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.93},
+      "reason": "ねじれ文。採用。"
+    },
+    {
+      "review_id": "R-23",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "構造性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A11-m1", "B08-4"],
+      "translations": [],
+      "score": {"base_max": 2.42, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.92},
+      "reason": "見出しレベルの飛びと配置の誤り。良い点（イベントの書き方）を残す修正案とした。採用。"
+    },
+    {
+      "review_id": "R-24",
+      "status": "採用",
+      "characteristic": "目的適合性",
+      "sub_characteristic": "目的合致性",
+      "reclassified_from": "非曖昧性（識別性）（A03-m3）",
+      "reclassify_reason": "顧客の運用ルールがシステム要求に混入し、要求仕様書の目的に合わない記述であることが本質のため、目的合致性に統一した",
+      "source_findings": ["A01-3", "A03-m3"],
+      "translations": [],
+      "score": {"base_max": 2.38, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.88},
+      "reason": "A01の「はっきりお断りしておきます」等の圧力表現は除き、要求と運用ルールの分離という文書上の指摘だけを残した。採用。"
+    },
+    {
+      "review_id": "R-25",
+      "status": "採用",
+      "characteristic": "保守性",
+      "sub_characteristic": "持続可能性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-m4", "A07-6"],
+      "translations": [],
+      "score": {"base_max": 2.3, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.8},
+      "reason": "良い点（帳票TBDの書き方）に揃える修正案とした。採用。"
+    },
+    {
+      "review_id": "R-26",
+      "status": "採用",
+      "characteristic": "目的適合性",
+      "sub_characteristic": "目的合致性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A01-9"],
+      "translations": [],
+      "score": {"base_max": 2.24, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.5, "knowledge_refs": ["K-CUS-01"], "knowledge_reason": "K-CUS-01（顧客Aは契約範囲の曖昧さに厳しい）。対象外事項・顧客提供物の未記載は追加作業範囲の争点になり得るため間接的に該当し+0.5", "final": 2.74},
+      "reason": "A01の「すべて御社の範囲と理解します」等の圧力表現は除いた。採用。"
+    },
+    {
+      "review_id": "R-27",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "基準適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A03-2"],
+      "translations": [],
+      "score": {"base_max": 2.72, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.72},
+      "reason": "サーバ所在国・越境移転の扱いは要求として本書に書くべき内容のため採用。適用法令の特定は法務部門への確認を修正案に含めた。"
+    },
+    {
+      "review_id": "R-28",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "記法適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A09-m3", "A11-m5", "B08-11"],
+      "translations": [],
+      "score": {"base_max": 1.71, "agreeing_personas": 3, "agreement_bonus": 1.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.71},
+      "reason": "誤字。採用。"
+    },
+    {
+      "review_id": "R-29",
+      "status": "採用",
+      "characteristic": "保守性",
+      "sub_characteristic": "再利用性",
+      "reclassified_from": "基準適合性（A03-8）",
+      "reclassify_reason": "特定の宛先・設備を埋め込んだ文面で他に使えないことが要求上の本質のため再利用性とした。個人名の扱い（基準適合性の側面）は問題文と修正案に含めた",
+      "source_findings": ["A03-8", "A07-m3"],
+      "translations": [],
+      "score": {"base_max": 2.16, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.66},
+      "reason": "採用。A09-3の文面テンプレート化の論点は多言語対応とあわせてR-32で扱う。"
+    },
+    {
+      "review_id": "R-30",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "簡潔性",
+      "reclassified_from": "非曖昧性（一意性）（A09-4）",
+      "reclassify_reason": "修飾が多重に入れ子になった長文であることが本質で、測定項目「多重の入れ子文がない」（簡潔性）に揃えた",
+      "source_findings": ["A09-4", "B08-15"],
+      "translations": [],
+      "score": {"base_max": 1.92, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "K-CUS-02は対象文書が手順書・取扱説明書のため補正に使わない", "final": 2.42},
+      "reason": "背景説明の長文で要求への影響は小さいため、軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-31",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（識別性）",
+      "reclassified_from": "文法適合性（B08-13）",
+      "reclassify_reason": "起点の「より」は非文ではないが比較とも読め意味を特定しにくいため、測定項目「意味を特定しやすい助詞を使用している」（識別性）に揃えた",
+      "source_findings": ["A09-5", "B08-13"],
+      "translations": [],
+      "score": {"base_max": 1.92, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.42},
+      "reason": "軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-32",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "制約適合性",
+      "reclassified_from": "制約適合性／基準適合性（A09-3）",
+      "reclassify_reason": "タイ文字の表示・対象言語の書記体系への適合が本質で、測定項目「開発制約として対象言語の書記体系に適合している」（制約適合性）に確定した",
+      "source_findings": ["A09-3", "A09-m5"],
+      "translations": [],
+      "score": {"base_max": 2.4, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "K-CUS-02は対象文書が手順書・取扱説明書で、システムの多言語要求ではなく文書の書き方に関する知識のため補正に使わない", "final": 2.4},
+      "reason": "A09の詳細指摘と軽微な指摘を1人として統合。スコアは低いがタイ工場を適用範囲に含む要求の欠落のため、指摘一覧（本文）に掲載。A01-10の言語対応の論点もここで扱う。採用。"
+    },
+    {
+      "review_id": "R-33",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（一意性）",
+      "reclassified_from": "表現適切性（B08-m1）",
+      "reclassify_reason": "手順か要求か、どれが必須かが一意に読めないことが本質で、測定項目「１つの文内で１つの事柄のみを記述している」（一意性）に揃えた",
+      "source_findings": ["A09-8", "B08-m1"],
+      "translations": [],
+      "score": {"base_max": 1.8, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.3},
+      "reason": "軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-34",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "表記適切性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A09-m1", "B08-9"],
+      "translations": [],
+      "score": {"base_max": 1.71, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.21},
+      "reason": "表記まとめとして軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-35",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "記法適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A11-m4", "B08-12"],
+      "translations": [],
+      "score": {"base_max": 1.71, "agreeing_personas": 2, "agreement_bonus": 0.5, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.21},
+      "reason": "軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-36",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "表記適切性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["B08-10"],
+      "translations": [],
+      "score": {"base_max": 1.71, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.5, "knowledge_refs": ["K-TPL-04"], "knowledge_reason": "K-TPL-04（推奨）仕様書の文体は常体に統一する、に直接該当。推奨のため+0.5", "final": 2.21},
+      "reason": "軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-37",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "無矛盾性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A05-m2"],
+      "translations": [],
+      "score": {"base_max": 2.03, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 2.03},
+      "reason": "通知先の食い違いは実装・試験の期待値に影響するため、スコアは低いが指摘一覧（本文）に掲載。採用。"
+    },
+    {
+      "review_id": "R-38",
+      "status": "採用",
+      "characteristic": "理解容易性",
+      "sub_characteristic": "非曖昧性（識別性）",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A09-m2"],
+      "translations": [],
+      "score": {"base_max": 1.68, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.68},
+      "reason": "違う内容を同じ名前で呼んでいる問題。B08-m3（違う名前で同じ内容）とは問題が異なるため分けた。軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-39",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "文法適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["B08-14"],
+      "translations": [],
+      "score": {"base_max": 1.62, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.62},
+      "reason": "同じ文のR-24（運用ルール混入）とは問題が異なるため分けた。軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-40",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "簡潔性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A07-m1"],
+      "translations": [],
+      "score": {"base_max": 1.61, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.61},
+      "reason": "記述の重複。R-43（見出しと本文の不一致）とは問題が異なるため分けた。軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-41",
+      "status": "採用",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "記法適合性",
+      "reclassified_from": "関係性（B08-5）",
+      "reclassify_reason": "表番号の欠番・付け方の不統一は参照情報の明示ではなく図表の記載ルールの問題のため、測定項目「図表の記載ルールに適合している」（記法適合性）とした",
+      "source_findings": ["B08-5"],
+      "translations": [],
+      "score": {"base_max": 1.51, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.51},
+      "reason": "軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-42",
+      "status": "採用",
+      "characteristic": "可読性",
+      "sub_characteristic": "表記適切性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["B08-m3"],
+      "translations": [],
+      "score": {"base_max": 1.26, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.26},
+      "reason": "表記まとめとして軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-43",
+      "status": "採用",
+      "characteristic": "整合性",
+      "sub_characteristic": "一貫性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["B08-m4"],
+      "translations": [],
+      "score": {"base_max": 0.94, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 0.94},
+      "reason": "見出しと本文の不一致。軽微な指摘のまとめに掲載。採用。"
+    },
+    {
+      "review_id": "R-44",
+      "status": "将来の改善候補",
+      "characteristic": "可読性",
+      "sub_characteristic": "表記適切性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["B08-m2"],
+      "translations": [],
+      "score": {"base_max": 0.63, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 0.63},
+      "reason": "重要度1（好みの範囲）で、単位表記の基準が社内テンプレートに定められていないため、今回の修正対象とせず表記基準を定める際の候補とした。"
+    },
+    {
+      "review_id": "R-45",
+      "status": "別途検討",
+      "characteristic": "規範適合性",
+      "sub_characteristic": "基準適合性",
+      "reclassified_from": null,
+      "reclassify_reason": null,
+      "source_findings": ["A09-m4"],
+      "translations": [],
+      "score": {"base_max": 1.12, "agreeing_personas": 1, "agreement_bonus": 0.0, "knowledge_adjust": 0.0, "knowledge_refs": [], "knowledge_reason": "直接該当する知識なし", "final": 1.12},
+      "reason": "問い合わせ窓口の運営（海外からの通話手段・受付時間）はソフトウェア要求ではなく保守・サポート契約の事項のため、文書の範囲外として別途検討とした。"
+    }
+  ]
+}
+</trace>
